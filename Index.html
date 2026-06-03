@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão IPTV</title>
+    
+    <!-- Configurações do App (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <style>
+        /* Mesmos estilos de antes, otimizados para celular */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; }
+        .container { max-width: 900px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1a1a1a; margin-bottom: 20px; font-size: 24px; }
+        form { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+        label { font-weight: 600; margin-bottom: 5px; display: block; color: #495057; font-size: 14px;}
+        input { padding: 12px; width: 100%; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 6px; font-size: 16px; }
+        button.btn-submit { background-color: #28a745; color: white; border: none; padding: 15px; cursor: pointer; font-weight: bold; font-size: 16px; border-radius: 6px; width: 100%; }
+        .tabela-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 400px; }
+        th, td { padding: 12px; border-bottom: 1px solid #dee2e6; text-align: left; font-size: 14px;}
+        th { background-color: #007bff; color: white; }
+        .acoes-flex { display: flex; gap: 5px; flex-direction: column;}
+        button.btn-edit { background-color: #ffc107; color: #212529; border: none; padding: 8px; border-radius: 4px; font-weight: 600; width: 100%;}
+        button.btn-delete { background-color: #dc3545; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 600; width: 100%;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestão IPTV</h1>
+
+        <form id="formCliente">
+            <input type="hidden" id="editIndex" value="-1">
+            
+            <div>
+                <label for="nome">Nome do Cliente</label>
+                <input type="text" id="nome" required>
+            </div>
+            <div>
+                <label for="vencimento">Data de Vencimento</label>
+                <input type="date" id="vencimento" required>
+            </div>
+            <div>
+                <label for="servidor">Servidor</label>
+                <input type="text" id="servidor" required>
+            </div>
+            <div>
+                <label for="valor">Valor (R$)</label>
+                <input type="number" id="valor" step="0.01" min="0" required>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="btnSalvar">Cadastrar</button>
+        </form>
+
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente / Venc.</th>
+                        <th>Serv. / Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaClientes"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de Gestão de Clientes
+        let clientes = JSON.parse(localStorage.getItem('iptv_clientes')) || [];
+        const formCliente = document.getElementById('formCliente');
+        const tabelaClientes = document.getElementById('tabelaClientes');
+        const btnSalvar = document.getElementById('btnSalvar');
+
+        function formatarData(dataISO) {
+            if (!dataISO) return '';
+            const partes = dataISO.split('-');
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        function salvarLocalStorage() {
+            localStorage.setItem('iptv_clientes', JSON.stringify(clientes));
+        }
+
+        function renderizarTabela() {
+            tabelaClientes.innerHTML = '';
+            clientes.forEach((cliente, index) => {
+                const tr = document.createElement('tr');
+                const valorFormatado = parseFloat(cliente.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
+                // Estrutura condensada para caber na tela do celular
+                tr.innerHTML = `
+                    <td><strong>${cliente.nome}</strong><br><small>${formatarData(cliente.vencimento)}</small></td>
+                    <td>${cliente.servidor}<br><strong>${valorFormatado}</strong></td>
+                    <td>
+                        <div class="acoes-flex">
+                            <button class="btn-edit" onclick="editarCliente(${index})">Editar</button>
+                            <button class="btn-delete" onclick="excluirCliente(${index})">Apagar</button>
+                        </div>
+                    </td>
+                `;
+                tabelaClientes.appendChild(tr);
+            });
+        }
+
+        formCliente.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nome = document.getElementById('nome').value;
+            const vencimento = document.getElementById('vencimento').value;
+            const servidor = document.getElementById('servidor').value;
+            const valor = document.getElementById('valor').value;
+            const editIndex = document.getElementById('editIndex').value;
+
+            const dadosCliente = { nome, vencimento, servidor, valor };
+
+            if (editIndex === '-1') {
+                clientes.push(dadosCliente);
+            } else {
+                clientes[editIndex] = dadosCliente;
+                document.getElementById('editIndex').value = '-1';
+                btnSalvar.textContent = 'Cadastrar';
+                btnSalvar.style.backgroundColor = '#28a745';
+            }
+
+            salvarLocalStorage();
+            renderizarTabela();
+            formCliente.reset();
+        });
+
+        window.editarCliente = function(index) {
+            const cliente = clientes[index];
+            document.getElementById('nome').value = cliente.nome;
+            document.getElementById('vencimento').value = cliente.vencimento;
+            document.getElementById('servidor').value = cliente.servidor;
+            document.getElementById('valor').value = cliente.valor;
+            document.getElementById('editIndex').value = index;
+            btnSalvar.textContent = 'Atualizar';
+            btnSalvar.style.backgroundColor = '#ffc107';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.excluirCliente = function(index) {
+            if (confirm(`Excluir ${clientes[index].nome}?`)) {
+                clientes.splice(index, 1);
+                salvarLocalStorage();
+                renderizarTabela();
+            }
+        };
+
+        renderizarTabela();
+
+        // Registrar o Service Worker (Essencial para virar App)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js');
+            });
+        }
+    </script>
+</body>
+</html>
