@@ -3,78 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão IPTV</title>
+    <title>Gestor IPTV Pro</title>
     
-    <!-- Configurações do App (PWA) -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff">
+    <meta name="theme-color" content="#2563eb">
     <link rel="apple-touch-icon" href="icon-192.png">
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* Mesmos estilos de antes, otimizados para celular */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; }
-        .container { max-width: 900px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #1a1a1a; margin-bottom: 20px; font-size: 24px; }
-        form { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
-        label { font-weight: 600; margin-bottom: 5px; display: block; color: #495057; font-size: 14px;}
-        input { padding: 12px; width: 100%; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 6px; font-size: 16px; }
-        button.btn-submit { background-color: #28a745; color: white; border: none; padding: 15px; cursor: pointer; font-weight: bold; font-size: 16px; border-radius: 6px; width: 100%; }
-        .tabela-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 400px; }
-        th, td { padding: 12px; border-bottom: 1px solid #dee2e6; text-align: left; font-size: 14px;}
-        th { background-color: #007bff; color: white; }
-        .acoes-flex { display: flex; gap: 5px; flex-direction: column;}
-        button.btn-edit { background-color: #ffc107; color: #212529; border: none; padding: 8px; border-radius: 4px; font-weight: 600; width: 100%;}
-        button.btn-delete { background-color: #dc3545; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 600; width: 100%;}
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #f3f4f6;
+            --surface: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 80px; /* Espaço para rolar no celular */
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header e Dashboard */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        /* Seção de Vencimentos (7 dias) */
+        .alert-section {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: none; /* Escondido por padrão, aparece via JS */
+        }
+        .alert-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .alert-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #92400e;
+            font-size: 14px;
+        }
+        .alert-list li { margin-bottom: 5px; }
+
+        /* Formulário */
+        .form-section {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        input {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        button.btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button.btn-submit:hover { background-color: var(--primary-hover); }
+
+        /* Tabela Profissional */
+        .table-section {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 600px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            padding: 12px 15px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .client-name { font-weight: 600; color: var(--text-main); }
+        .client-server { font-size: 12px; color: var(--text-muted); }
+
+        /* Badges de Status */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+
+        /* Botões de Ação */
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-icon {
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .btn-edit { background: #e0e7ff; color: var(--primary); }
+        .btn-edit:hover { background: #c7d2fe; }
+        .btn-delete { background: #fee2e2; color: var(--danger); }
+        .btn-delete:hover { background: #fecaca; }
+
+        /* Notificação Toast */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.3s;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsivo para Celular */
+        @media (max-width: 600px) {
+            form { grid-template-columns: 1fr; }
+            .dashboard { grid-template-columns: 1fr 1fr; }
+            .total-revenue { grid-column: 1 / -1; }
+            
+            /* Transforma tabela em cards no celular */
+            table, thead, tbody, th, td, tr { display: block; }
+            thead { display: none; }
+            tr { border: 1px solid var(--border); margin-bottom: 15px; border-radius: 8px; padding: 10px; }
+            td { border: none; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; }
+            td::before { content: attr(data-label); font-weight: 600; color: var(--text-muted); font-size: 12px; }
+            .actions { width: 100%; justify-content: flex-end; margin-top: 10px;}
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>Gestão IPTV</h1>
+        <div class="header">
+            <i class="fa-solid fa-tv fa-2x"></i>
+            <h1 style="margin: 0; font-size: 22px;">Gestor IPTV Pro</h1>
+        </div>
 
-        <form id="formCliente">
-            <input type="hidden" id="editIndex" value="-1">
-            
-            <div>
-                <label for="nome">Nome do Cliente</label>
-                <input type="text" id="nome" required>
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-title">Total de Clientes</div>
+                <div class="card-value" id="dashTotal">0</div>
             </div>
-            <div>
-                <label for="vencimento">Data de Vencimento</label>
-                <input type="date" id="vencimento" required>
+            <div class="card">
+                <div class="card-title">Vencendo em 7 dias</div>
+                <div class="card-value" id="dashVencendo" style="color: var(--warning);">0</div>
             </div>
-            <div>
-                <label for="servidor">Servidor</label>
-                <input type="text" id="servidor" required>
+            <div class="card total-revenue">
+                <div class="card-title">Receita Mensal Estimada</div>
+                <div class="card-value" id="dashReceita" style="color: var(--success);">R$ 0,00</div>
             </div>
-            <div>
-                <label for="valor">Valor (R$)</label>
-                <input type="number" id="valor" step="0.01" min="0" required>
-            </div>
-            
-            <button type="submit" class="btn-submit" id="btnSalvar">Cadastrar</button>
-        </form>
+        </div>
 
-        <div class="tabela-container">
+        <div id="alertSection" class="alert-section">
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> Atenção: Clientes Vencendo ou Vencidos</h3>
+            <ul id="alertList" class="alert-list">
+                </ul>
+        </div>
+
+        <div class="form-section">
+            <form id="formCliente">
+                <input type="hidden" id="editIndex" value="-1">
+                
+                <div class="form-group">
+                    <label for="nome">Nome do Cliente</label>
+                    <input type="text" id="nome" placeholder="Ex: Maria Oliveira" required>
+                </div>
+                <div class="form-group">
+                    <label for="vencimento">Data de Vencimento</label>
+                    <input type="date" id="vencimento" required>
+                </div>
+                <div class="form-group">
+                    <label for="servidor">Servidor / Plano</label>
+                    <input type="text" id="servidor" placeholder="Ex: Servidor X - Tela Única" required>
+                </div>
+                <div class="form-group">
+                    <label for="valor">Valor Mensal (R$)</label>
+                    <input type="number" id="valor" step="0.01" min="0" placeholder="35.00" required>
+                </div>
+                
+                <div class="form-group full-width">
+                    <button type="submit" class="btn-submit" id="btnSalvar">
+                        <i class="fa-solid fa-user-plus"></i> Salvar Cliente
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-section">
             <table>
                 <thead>
                     <tr>
-                        <th>Cliente / Venc.</th>
-                        <th>Serv. / Valor</th>
+                        <th>Cliente</th>
+                        <th>Vencimento</th>
+                        <th>Servidor</th>
+                        <th>Valor</th>
+                        <th>Status</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody id="tabelaClientes"></tbody>
+                <tbody id="tabelaClientes">
+                    </tbody>
             </table>
         </div>
     </div>
 
+    <div id="toast">Ação realizada com sucesso!</div>
+
     <script>
-        // Lógica de Gestão de Clientes
         let clientes = JSON.parse(localStorage.getItem('iptv_clientes')) || [];
+        
         const formCliente = document.getElementById('formCliente');
         const tabelaClientes = document.getElementById('tabelaClientes');
         const btnSalvar = document.getElementById('btnSalvar');
+
+        // Função para calcular diferença de dias e retornar status
+        function analisarVencimento(dataISO) {
+            const [ano, mes, dia] = dataISO.split('-');
+            const dataVenc = new Date(ano, mes - 1, dia);
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0); // Zera as horas para calcular apenas os dias
+
+            const diferencaTempo = dataVenc.getTime() - hoje.getTime();
+            const diasRestantes = Math.ceil(diferencaTempo / (1000 * 3600 * 24));
+
+            let status = '';
+            let classeBadge = '';
+            let textoStatus = '';
+
+            if (diasRestantes < 0) {
+                status = 'vencido';
+                classeBadge = 'badge-danger';
+                textoStatus = 'Vencido';
+            } else if (diasRestantes <= 7) {
+                status = 'vencendo';
+                classeBadge = 'badge-warning';
+                textoStatus = diasRestantes === 0 ? 'Vence Hoje' : `Vence em ${diasRestantes} dia(s)`;
+            } else {
+                status = 'ativo';
+                classeBadge = 'badge-success';
+                textoStatus = 'Ativo';
+            }
+
+            return { diasRestantes, status, classeBadge, textoStatus };
+        }
 
         function formatarData(dataISO) {
             if (!dataISO) return '';
@@ -82,29 +389,80 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
-        function salvarLocalStorage() {
-            localStorage.setItem('iptv_clientes', JSON.stringify(clientes));
+        function mostrarToast(mensagem) {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensagem;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        function renderizarTabela() {
+        function atualizarDashboardEAlertas() {
+            let receitaTotal = 0;
+            let qtdVencendo = 0;
+            const alertList = document.getElementById('alertList');
+            const alertSection = document.getElementById('alertSection');
+            alertList.innerHTML = '';
+
+            clientes.forEach(cliente => {
+                receitaTotal += parseFloat(cliente.valor || 0);
+                
+                const analise = analisarVencimento(cliente.vencimento);
+                if (analise.status === 'vencido' || analise.status === 'vencendo') {
+                    qtdVencendo++;
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${cliente.nome}</strong> - ${analise.textoStatus} (${formatarData(cliente.vencimento)})`;
+                    alertList.appendChild(li);
+                }
+            });
+
+            document.getElementById('dashTotal').textContent = clientes.length;
+            document.getElementById('dashVencendo').textContent = qtdVencendo;
+            document.getElementById('dashReceita').textContent = receitaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            if (qtdVencendo > 0) {
+                alertSection.style.display = 'block';
+            } else {
+                alertSection.style.display = 'none';
+            }
+        }
+
+        function renderizarAplicacao() {
+            // Ordenar clientes (vencimentos mais próximos primeiro)
+            clientes.sort((a, b) => new Date(a.vencimento) - new Date(b.vencimento));
+
             tabelaClientes.innerHTML = '';
+
             clientes.forEach((cliente, index) => {
                 const tr = document.createElement('tr');
                 const valorFormatado = parseFloat(cliente.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                
-                // Estrutura condensada para caber na tela do celular
+                const analise = analisarVencimento(cliente.vencimento);
+
                 tr.innerHTML = `
-                    <td><strong>${cliente.nome}</strong><br><small>${formatarData(cliente.vencimento)}</small></td>
-                    <td>${cliente.servidor}<br><strong>${valorFormatado}</strong></td>
-                    <td>
-                        <div class="acoes-flex">
-                            <button class="btn-edit" onclick="editarCliente(${index})">Editar</button>
-                            <button class="btn-delete" onclick="excluirCliente(${index})">Apagar</button>
+                    <td data-label="Cliente">
+                        <div class="client-name">${cliente.nome}</div>
+                    </td>
+                    <td data-label="Vencimento"><strong>${formatarData(cliente.vencimento)}</strong></td>
+                    <td data-label="Servidor"><span class="client-server">${cliente.servidor}</span></td>
+                    <td data-label="Valor">${valorFormatado}</td>
+                    <td data-label="Status">
+                        <span class="badge ${analise.classeBadge}">${analise.textoStatus}</span>
+                    </td>
+                    <td data-label="Ações">
+                        <div class="actions">
+                            <button type="button" class="btn-icon btn-edit" onclick="editarCliente(${index})" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button type="button" class="btn-icon btn-delete" onclick="excluirCliente(${index})" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </div>
                     </td>
                 `;
                 tabelaClientes.appendChild(tr);
             });
+
+            atualizarDashboardEAlertas();
+            localStorage.setItem('iptv_clientes', JSON.stringify(clientes));
         }
 
         formCliente.addEventListener('submit', function(e) {
@@ -119,16 +477,18 @@
 
             if (editIndex === '-1') {
                 clientes.push(dadosCliente);
+                mostrarToast('Cliente cadastrado com sucesso!');
             } else {
                 clientes[editIndex] = dadosCliente;
                 document.getElementById('editIndex').value = '-1';
-                btnSalvar.textContent = 'Cadastrar';
-                btnSalvar.style.backgroundColor = '#28a745';
+                btnSalvar.innerHTML = '<i class="fa-solid fa-user-plus"></i> Salvar Cliente';
+                btnSalvar.style.backgroundColor = 'var(--primary)';
+                mostrarToast('Cadastro atualizado!');
             }
 
-            salvarLocalStorage();
-            renderizarTabela();
+            renderizarAplicacao();
             formCliente.reset();
+            document.getElementById('nome').focus();
         });
 
         window.editarCliente = function(index) {
@@ -138,25 +498,28 @@
             document.getElementById('servidor').value = cliente.servidor;
             document.getElementById('valor').value = cliente.valor;
             document.getElementById('editIndex').value = index;
-            btnSalvar.textContent = 'Atualizar';
-            btnSalvar.style.backgroundColor = '#ffc107';
+            
+            btnSalvar.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Atualizar Cliente';
+            btnSalvar.style.backgroundColor = 'var(--warning)';
+            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.excluirCliente = function(index) {
-            if (confirm(`Excluir ${clientes[index].nome}?`)) {
+            if (confirm(`Excluir permanentemente o cliente ${clientes[index].nome}?`)) {
                 clientes.splice(index, 1);
-                salvarLocalStorage();
-                renderizarTabela();
+                renderizarAplicacao();
+                mostrarToast('Cliente excluído!');
             }
         };
 
-        renderizarTabela();
+        // Inicialização
+        renderizarAplicacao();
 
-        // Registrar o Service Worker (Essencial para virar App)
+        // Registrar PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js');
+                navigator.serviceWorker.register('./sw.js').catch(()=> {});
             });
         }
     </script>
